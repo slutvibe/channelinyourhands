@@ -9,5 +9,4 @@
 `python3 main.py`
 
 ## FeedBack / Другое
-t.me/backalleyblitz
-t.me/channelinyourhands
+<a href="https://t.me/channelinyourhands">Телеграм Канал бота</a>
