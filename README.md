@@ -1,12 +1,13 @@
 # Канал в ваших руках
 *Бот, который позволяет отправлять что либо в канал.*
 
-# Требования
+## Требования
 `aiogram==2.25.1`
 `aiosqlite==0.20.0`
 
-# Запуск
+## Запуск
 `python3 main.py`
 
-# FeedBack / Другое
-``t.me/backalleyblitz``
+## FeedBack / Другое
+t.me/backalleyblitz
+t.me/channelinyourhands
