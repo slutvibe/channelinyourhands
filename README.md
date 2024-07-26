@@ -9,4 +9,4 @@
 `python3 main.py`
 
 # FeedBack / Другое
-t.me/backalleyblitz
+``t.me/backalleyblitz``
