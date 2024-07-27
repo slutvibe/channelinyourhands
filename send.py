@@ -120,3 +120,13 @@ async def handle_media(message: types.Message):
             await message.reply("Пожайлуста, ответьте на медиа-сообщение (фото, видео, GIF или стикер), чтобы использовать команду /media.")
     else:
         await message.reply("Пожалуйста, ответьте на медиа-сообщение (фото, видео, GIF или стикер), чтобы использовать команду /media.")
+
+@dp.message_handler(commands=['rules'])
+async def handle_rules(message: types.Message):
+    await message.reply("Правила Бота\n\nЗапрещена порнография\nЗапрещён спам\nЗапрещена реклама")
+
+@dp.message_handler(commands=['help'])
+async def handle_help(message: types.Message):
+    await message.reply('Команды бота\n\n/help - Показать это сообщение\n/send "text" - Отправить текстовое сообщение в канал\n/media (ответ на фото, видео, стикер или GIF) - Отправить медиа в канал\n/report \'ссылка на пост\' \'причина репорта(по желанию)\' - Уведомить админа о нарушении')
+ 
+                            
