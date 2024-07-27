@@ -5,6 +5,9 @@ from datetime import datetime
 import configparser
 from aiogram import Bot, Dispatcher
 from aiogram.types import ParseMode
+import logging
+
+logging.basicConfig(filename='bot.log', format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 DB_NAME = 'bot.db'
 BLACKLIST_FILE = 'blacklist.json'
