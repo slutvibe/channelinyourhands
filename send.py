@@ -35,13 +35,11 @@ async def save_media_file(media, media_type):
     await bot.download_file(file_path, temp_file_path)
     return temp_file_path
 
-@dp.message_handler(commands=['send'])
-async def handle_send(message: types.Message):
+@dp.message_handler(content_types=['text', 'photo', 'video', 'animation', 'ticker'])
+async def handle_message(message: types.Message):
     if message.chat.type in ['supergroup', 'group', 'channel']:
-        await message.reply("Команда /send поддерживается только в личных сообщениях с ботом.")
         return
     
-    global message_queue
     if await is_send_restricted(message.from_user.id):
         await message.reply("Извините, отправка сообщений сейчас запрещена.")
     elif is_user_blacklisted(message.from_user.id):
@@ -49,78 +47,61 @@ async def handle_send(message: types.Message):
         reason = user_info['reason']
         timestamp = user_info['timestamp']
         await message.reply(f"Вы были заблокированы.\nПричина: {reason}\nВремя, когда вы были заблокированы: {timestamp}")
-    elif contains_banned_words(message.text):
-        await message.reply("Ваше сообщение содержит запрещенные слова и не может быть отправлено в канал.")
     else:
-        if len(message.text.split(maxsplit=1)) > 1:
-            text_to_send = message.text.split(maxsplit=1)[1]
-            await asyncio.sleep(2)
-            user = message.from_user
-            if user.username:
-                user_mention = f"@{user.username}"
+        user = message.from_user
+        user_mention = f"<a href='tg://user?id={user.id}'>{user.full_name}</a> ({user.id})"
+        user_signature = f"\nОтправлено пользователем: {user_mention}"
+
+        if message.text:
+            if contains_banned_words(message.text):
+                await message.reply("Ваше сообщение содержит запрещенные слова и не может быть отправлено в канал.")
             else:
-                user_mention = f"<a href='tg://user?id={user.id}'>{user.full_name}</a>"
-            user_signature = f"\nОтправлено пользователем: {user_mention}"
-            try:
-                await bot.send_message(CHANNEL_ID, text_to_send + user_signature, parse_mode=ParseMode.HTML)
-                await message.reply("Текст успешно отправлен в канал.")
-            except Exception as e:
-                await message.reply(f"Произошла ошибка при отправке текста в канал: {e}")
-        else:
-            await message.reply("Пожалуйста, укажите текст после команды /send для отправки в канал.")
-
-@dp.message_handler(commands=['media'])
-async def handle_media(message: types.Message):
-    if message.chat.type in ['supergroup', 'group', 'channel']:
-        await message.reply("Команда /media поддерживается только в личных сообщениях с ботом.")
-        return
-    
-    if await is_send_restricted(message.from_user.id):
-        await message.reply("Извините, отправка сообщений сейчас запрещена.")
-        return
-    elif is_user_blacklisted(message.from_user.id):
-        user_info = get_blacklisted_user_info(message.from_user.id)
-        reason = user_info['reason']
-        timestamp = user_info['timestamp']
-        await message.reply(f"Вы были заблокированы.\nПричина: {reason}\nВремя, когда вы были заблокированы: {timestamp}")
-        return
-    elif message.reply_to_message:
-        media = None
-        media_type = None
-
-        if message.reply_to_message.photo:
-            media = message.reply_to_message.photo[-1]
+                try:
+                    await bot.send_message(CHANNEL_ID, message.text + user_signature, parse_mode=ParseMode.HTML)
+                    await message.reply("Ваше сообщение отправлено.")
+                except Exception as e:
+                    await message.reply(f"Произошла ошибка при отправке текста в канал: {e}")
+        elif message.photo:
+            media = message.photo[-1]
             media_type = 'photo'
-        elif message.reply_to_message.video:
-            media = message.reply_to_message.video
-            media_type = 'video'
-        elif message.reply_to_message.animation:
-            media = message.reply_to_message.animation
-            media_type = 'animation'
-        elif message.reply_to_message.sticker:
-            media = message.reply_to_message.sticker
-            media_type = 'sticker'
-
-        if media:
             try:
                 temp_file_path = await save_media_file(media, media_type)
-                user = message.from_user
-                if user.username:
-                    user_mention = f"@{user.username}"
-                else:
-                    user_mention = f"<a href='tg://user?id={user.id}'>{user.full_name}</a>"
-                user_signature = f"\nОтправлено пользователем: {user_mention}"
                 post_message = (temp_file_path, user_signature, media_type)
-                await asyncio.sleep(2)
                 await message_queue.put(post_message)
-                await message.reply("Медиа будет отправлено в течение ближайших нескольких секунд.")
+                await message.reply("Ваше сообщение отправлено.")
             except Exception as e:
                 await message.reply(f"Произошла ошибка при загрузке медиа: {e}")
-        else:
-            await message.reply("Пожайлуста, ответьте на медиа-сообщение (фото, видео, GIF или стикер), чтобы использовать команду /media.")
-    else:
-        await message.reply("Пожалуйста, ответьте на медиа-сообщение (фото, видео, GIF или стикер), чтобы использовать команду /media.")
-
+        elif message.video:
+            media = message.video
+            media_type = 'video'
+            try:
+                temp_file_path = await save_media_file(media, media_type)
+                post_message = (temp_file_path, user_signature, media_type)
+                await message_queue.put(post_message)
+                await message.reply("Ваше сообщение отправлено.")
+            except Exception as e:
+                await message.reply(f"Произошла ошибка при загрузке медиа: {e}")
+        elif message.animation:
+            media = message.animation
+            media_type = 'animation'
+            try:
+                temp_file_path = await save_media_file(media, media_type)
+                post_message = (temp_file_path, user_signature, media_type)
+                await message_queue.put(post_message)
+                await message.reply("Ваше сообщение отправлено.")
+            except Exception as e:
+                await message.reply(f"Произошла ошибка при загрузке медиа: {e}")
+        elif message.sticker:
+            media = message.sticker
+            media_type = 'ticker'
+            try:
+                temp_file_path = await save_media_file(media, media_type)
+                post_message = (temp_file_path, user_signature, media_type)
+                await message_queue.put(post_message)
+                await message.reply("Ваше сообщение отправлено.")
+            except Exception as e:
+                await message.reply(f"Произошла ошибка при загрузке медиа: {e}")
+                
 @dp.message_handler(commands=['rules'])
 async def handle_rules(message: types.Message):
     await message.reply("Правила Бота\n\nЗапрещена порнография\nЗапрещён спам\nЗапрещена реклама")
@@ -128,5 +109,3 @@ async def handle_rules(message: types.Message):
 @dp.message_handler(commands=['help'])
 async def handle_help(message: types.Message):
     await message.reply('Команды бота\n\n/help - Показать это сообщение\n/send "text" - Отправить текстовое сообщение в канал\n/media (ответ на фото, видео, стикер или GIF) - Отправить медиа в канал\n/report \'ссылка на пост\' \'причина репорта(по желанию)\' - Уведомить админа о нарушении')
- 
-                            
