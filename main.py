@@ -1,7 +1,7 @@
 import asyncio
 from aiogram import Dispatcher
-from bot import create_tables, bot, dp
-from send import message_worker, handle_rules, handle_help
+from bot import create_tables, bot, dp, handle_start
+from send import message_worker, handle_message
 
 async def on_startup(dispatcher):
     await create_tables()
