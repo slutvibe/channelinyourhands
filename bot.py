@@ -3,7 +3,7 @@ import json
 import aiosqlite
 from datetime import datetime
 import configparser
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types
 from aiogram.types import ParseMode
 import logging
 
@@ -115,3 +115,8 @@ async def is_send_restricted(chat_id):
                 if datetime.strptime(restriction_until, "%Y-%m-%d %H:%M:%S") > datetime.strptime(now, "%Y-%m-%d %H:%M:%S"):
                     return True
     return False
+
+
+@dp.message_handler(commands=['start'])
+async def handle_start(message: types.Message):
+    await message.reply("Привет. Я бот через которого ты можешь отправить что нибудь в канал.\n\nПеред началом советую глянуть /rules.\nСписок команд - /help")
