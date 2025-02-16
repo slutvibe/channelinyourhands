@@ -7,8 +7,3 @@
 
 ## Запуск
 `python3 main.py`
-
-## FeedBack / Другое
-<a href="https://t.me/channelinyourhands">Телеграм Канал бота</a>
-
-<a href="https://t.me/backalleyblitz">Мой Телеграм(Личка)</a>
